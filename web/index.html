@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <title>AI-Guide 旅游导游助手</title>
+    <!--
+      高德 JS API 2.0 的脚本地址集中在这里，是 web/ 下唯一一处第三方 SDK 绝对地址。
+      原因：AMap JS 2.0 必须从高德域名加载，无法改成同源相对路径；而仓库测试
+      backend/tests/test_s0_repo_hygiene.py::test_new_workbench_bundle_has_no_hardcoded_hosts
+      会扫描 web/src 下的所有 ts/vue/js/css/html 文件并禁止出现绝对主机地址。
+      把地址放在页面模板（web/src 之外）后，src/ 里可以做到零绝对地址，
+      同时保持“只有一个地方能改脚本地址”这一约定。
+      读取方：web/src/map/amap-loader.ts（运行时读取 meta 并拼上 VITE_AMAP_JS_KEY）。
+      网页端 JS Key 由构建时的 VITE_AMAP_JS_KEY 提供，不写在这里；
+      JS 安全密钥（jscode）只在服务端 /_AMapService 代理里追加，前端不持有。
+    -->
+    <meta name="amap-sdk-src" content="https://webapi.amap.com/maps?v=2.0" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

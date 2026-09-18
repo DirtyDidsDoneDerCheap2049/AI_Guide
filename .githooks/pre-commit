@@ -1,0 +1,29 @@
+#!/usr/bin/env sh
+# 提交前脱敏门禁：出现凭据类命中就拒绝提交（示例值/占位值会被忽略）。
+# 启用一次即可： git config core.hooksPath .githooks
+#
+# 说明：Windows 上 python/python3 可能是 Microsoft Store 的占位程序，
+# 因此逐个候选解释器做真实调用验证；无法扫描时拒绝提交。
+set -e
+
+PY=""
+for candidate in python3 python .venv/Scripts/python.exe .venv/bin/python work/.venv/Scripts/python.exe work/.venv/bin/python; do
+  if command -v "$candidate" >/dev/null 2>&1 || [ -x "$candidate" ]; then
+    if "$candidate" -c "import sys" >/dev/null 2>&1; then
+      PY="$candidate"
+      break
+    fi
+  fi
+done
+
+if [ -z "$PY" ]; then
+  echo "[pre-commit] 未找到 Python，无法完成凭据检查。请安装 Python 后重新提交。"
+  exit 1
+fi
+
+if "$PY" scripts/secret_scan.py --root . --fail-on-credentials --quiet --staged; then
+  exit 0
+fi
+
+echo "[pre-commit] 检测到疑似凭据，已拒绝提交。请改用环境变量或 .env（.env 已被 .gitignore 排除）。"
+exit 1

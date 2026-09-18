@@ -1,0 +1,12 @@
+# Use from the repository root:
+# docker compose -f docker-compose.yml -f deploy/compose.small.yml ...
+# A starting configuration for a 2GB host; requires Linux runtime verification.
+services:
+  worker:
+    command: ["python", "-m", "app.worker.cli", "worker", "--processes", "1", "--threads", "2"]
+  mysql:
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --innodb-buffer-pool-size=134217728
+      - --max-connections=60

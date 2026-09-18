@@ -1,0 +1,87 @@
+# ---- 密钥与本地配置 ----
+.env
+.env.*
+!.env.example
+# 生产环境变量模板只有占位符，必须进 Git；服务器上真正的 .env 仍被上面的规则忽略。
+!deploy/.env.production.example
+*.pem
+*.key
+*.p12
+secrets/
+credentials/
+
+# ---- 本地工作目录（脚本、虚拟环境、本地 MySQL/Redis 数据、日志）----
+work/
+logs/
+*.log
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage/
+*.egg-info/
+
+# ---- Node / 前端构建产物 ----
+node_modules/
+dist/
+dist-ssr/
+.vite/
+*.local
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---- 上传卷与本地数据库文件 ----
+backend/var/
+backend/var/media/
+backend/var/mysql/
+uploads/
+*.sqlite
+*.sqlite3
+*.db
+legacy/backend-temp/ai_guide.db
+
+# ---- 迁移与运行产物 ----
+.dramatiq/
+*.pid
+backups/
+
+# ---- 编辑器 ----
+.idea/
+.vscode/*
+*.suo
+*.sw?
+.DS_Store
+Thumbs.db
+
+# ---- 本地历史资料（保留在磁盘，不属于公开源码）----
+/legacy/
+/docs/legacy/
+/docs/productization/
+/docs/ai-guide-visuals/
+/docs/assets/desktop-guide/
+/docs/AI-Guide产品化改造方案.md
+/docs/CODEX-REVIEW-CHECKLIST.md
+/docs/RELEASE-CHECKLIST.md
+/deploy/LOCAL-DRY-RUN.md
+/start-local.ps1
+
+# ---- 导出与诊断数据 ----
+*.sql.gz
+*.tar.gz
+*.zip
+*.har
+*.pfx
+*.p8
+*.dump
+*.bak
+id_rsa
+id_ed25519

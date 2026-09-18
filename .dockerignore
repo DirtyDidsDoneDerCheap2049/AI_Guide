@@ -1,0 +1,67 @@
+# 构建上下文排除清单（后端镜像构建上下文 = 仓库根目录）。
+# 目标：镜像里只有 backend/app、backend/migrations、backend/alembic.ini 和依赖。
+# 注意：这里排除的是「发送给 Docker daemon 的上下文」，不是 .gitignore 的替代品。
+
+# ---- 版本控制与 CI ----
+.git
+.gitignore
+.gitattributes
+.github/
+
+# ---- 密钥与本地配置（示例文件保留，便于阅读变量名）----
+.env
+.env.*
+!.env.example
+deploy/.env.production.example
+*.pem
+*.key
+*.p12
+secrets/
+credentials/
+
+# ---- 本地工作目录与运行产物 ----
+work/
+logs/
+*.log
+backups/
+.dramatiq/
+*.pid
+
+# ---- 本地持久化数据 ----
+backend/var/
+uploads/
+*.db
+*.sqlite
+*.sqlite3
+
+# ---- 测试与缓存 ----
+backend/tests/
+backend/.pytest_cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+**/__pycache__/
+**/*.py[cod]
+**/*.egg-info/
+
+# ---- Python 虚拟环境 ----
+.venv/
+**/.venv/
+venv/
+env/
+
+# ---- Node / 前端（web 有自己的构建上下文与 Dockerfile）----
+node_modules/
+**/node_modules/
+dist/
+dist-ssr/
+.vite/
+web/
+legacy/
+
+# ---- 历史代码与文档（不参与运行）----
+docs/
+deploy/
+AI-Guide产品化改造方案.md
+应急助手功能设计文档.md
+用户认证功能手册.md

@@ -1,0 +1,10 @@
+# 构建上下文只保留构建所需内容，避免把 node_modules、产物和本地日志塞进镜像层。
+node_modules
+dist
+# 本地环境变量文件绝不进构建上下文（.env.local 里有高德 Key；镜像构建只用 build args）
+.env
+.env.*
+.vite
+*.log
+Dockerfile
+.dockerignore

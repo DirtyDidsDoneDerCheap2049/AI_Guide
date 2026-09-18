@@ -1,0 +1,51 @@
+# 生产入口：容器内监听 80（以及 443，当 SITE_ADDRESS 是域名时）。
+#
+# 两种部署方式，必须在 .env 里显式选择一种（B8：不能既关闭自动 HTTPS、又用 Secure Cookie）：
+#
+#   A. Caddy 自己终止 TLS（推荐）
+#      SITE_ADDRESS=guide.example.com
+#      -> Caddy 自动申请/续期证书（需要 80 与 443 都对外可达，证书持久化在 caddy_data 卷），
+#         并自动把 http:// 重定向到 https://。
+#
+#   B. 外层负载均衡/网关终止 TLS，本容器只提供 http
+#      SITE_ADDRESS=:80
+#      -> 必须由外层网关设置 X-Forwarded-Proto: https，并且真实访问地址必须是 https，
+#         否则浏览器不会回传 Secure 的登录/访客 Cookie（会话无法维持）。
+#         此时 compose 里的 443 映射可以不开（WEB_HTTPS_PORT 留空）。
+#
+# 注意：SITE_ADDRESS 由 docker-compose.yml 注入，未设置时默认 ":80"（方式 B）。
+{$SITE_ADDRESS} {
+	root * /srv
+
+	# 基础安全响应头。HSTS 只在确认长期使用 https 后再打开（避免把裸域名锁死）：
+	# header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	header {
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+
+	# API 与 SSE 统一走反向代理（同源，浏览器端不需要任何绝对地址）。
+	handle /api/* {
+		reverse_proxy api:8000 {
+			# SSE 必须实时推送：flush_interval -1 关闭响应缓冲，
+			# 否则事件会攒在缓冲区里，页面只能在连接结束时才收到内容。
+			flush_interval -1
+		}
+	}
+
+	# 高德 JS API 2.0 的安全代理：前端把 _AMapSecurityConfig.serviceHost 指向同源
+	# /_AMapService（见 web/src/map/amap-loader.ts）。未配置此段时，生产环境的
+	# 地图数据请求会落到下面的 SPA 回退上，地图会静默退化。
+	handle /_AMapService/* {
+		reverse_proxy api:8000
+	}
+
+	# 单页应用：命中真实文件就直接返回，否则回退到 index.html。
+	# /verify-email?token=... 与 /reset-password?token=... 也靠这条回退进入 SPA。
+	handle {
+		encode zstd gzip
+		try_files {path} /index.html
+		file_server
+	}
+}
