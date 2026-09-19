@@ -133,7 +133,12 @@ file_sha256() {
 sql_on() {
   local database="$1" statement="$2"
   compose exec -T mysql sh -c \
-    "exec mysql -N -B -u root -p\"\$MYSQL_ROOT_PASSWORD\" ${database} -e \"${statement}\"" | tr -d '\r'
+    'if [ -n "$1" ]; then
+       exec mysql -N -B -u root -p"$MYSQL_ROOT_PASSWORD" "$1" -e "$2"
+     else
+       exec mysql -N -B -u root -p"$MYSQL_ROOT_PASSWORD" -e "$2"
+     fi' \
+    sh "${database}" "${statement}" | tr -d '\r'
 }
 
 table_counts_json() {

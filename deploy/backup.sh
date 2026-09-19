@@ -128,8 +128,10 @@ trap cleanup EXIT
 # ------------------------------------------------------------------ 采集
 
 sql_scalar() {
+  # SQL 作为位置参数传给容器内 shell，避免反引号、$() 或引号被二次解析。
   compose exec -T mysql sh -c \
-    "exec mysql -N -B -u root -p\"\$MYSQL_ROOT_PASSWORD\" \"\$MYSQL_DATABASE\" -e \"$1\""
+    'exec mysql -N -B -u root -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE" -e "$1"' \
+    sh "$1"
 }
 
 dump_mysql() {
@@ -176,7 +178,8 @@ table_counts_json() {
   done <<<"${tables}"
   [[ -n "${sql}" ]] || { printf '{}'; return 0; }
   compose exec -T mysql sh -c \
-    "exec mysql -N -B -u root -p\"\$MYSQL_ROOT_PASSWORD\" \"\$MYSQL_DATABASE\" -e \"${sql}\"" \
+    'exec mysql -N -B -u root -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE" -e "$1"' \
+    sh "${sql}" \
     | tr -d '\r' \
     | awk -F'\t' 'BEGIN{printf "{"} {if (n++) printf ","; printf "\"%s\":%s", $1, $2} END{printf "}"}'
 }
