@@ -33,6 +33,7 @@ from app.models import (
     utcnow,
 )
 from app.schemas import ConfirmPlaceRequest
+from app.services.model_options import select_model
 
 logger = logging.getLogger("app.services.runs")
 
@@ -352,6 +353,10 @@ def create_message_run(
     project: GuideProject,
     session_row: DemoSession,
     content: str,
+    model_id: str | None = None,
+    thinking: bool | None = None,
+    thinking_level: str | None = None,
+    model_selection: dict | None = None,
     media: MediaAsset | None = None,
     intent: str = Intent.ANSWER_QUESTION,
     idempotency_key: str | None = None,
@@ -372,6 +377,7 @@ def create_message_run(
             if existing_message is not None:
                 return existing_message, existing_run, False
 
+    selection = model_selection or select_model(settings, model_id, thinking, thinking_level)
     # B6：额度与图片任务共用同一批额度桶（对话同样消耗模型额度）。
     reserve_run_quota(db, settings, session_row, client_hash)
 
@@ -398,6 +404,7 @@ def create_message_run(
         intent=intent,
         input_snapshot={
             "message_id": message.id,
+            "model_selection": selection,
             "message_seq": seq,
             "content": content,
             "media_asset_id": media.id if media is not None else None,
@@ -485,7 +492,7 @@ def create_retry_run(
             raise RunConflict('message_not_found')
         if original.content != (source_run.input_snapshot or {}).get('content'):
             raise RunConflict('message_changed')
-        _, run, created = create_message_run(db, settings, project=project, session_row=session_row, content=original.content, media=media, idempotency_key=idempotency_key or f'retry:{source_run.id}', client_hash=client_hash)
+        _, run, created = create_message_run(db, settings, project=project, session_row=session_row, content=original.content, media=media, idempotency_key=idempotency_key or f'retry:{source_run.id}', client_hash=client_hash, model_selection=(source_run.input_snapshot or {}).get("model_selection"))
         if created:
             run.source_run_id = source_run.id
             db.commit()

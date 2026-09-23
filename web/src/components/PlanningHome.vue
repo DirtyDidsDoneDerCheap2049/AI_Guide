@@ -5,6 +5,7 @@ import { useAuth } from '../composables/useAuth'
 import { MAP_CITIES } from '../map/cities'
 import TripsPanel from './TripsPanel.vue'
 import DiscoveryPanel from './DiscoveryPanel.vue'
+import ModelOptions from './ModelOptions.vue'
 const workspace = useWorkspace()
 const { state, project } = workspace
 const auth = useAuth()
@@ -41,7 +42,7 @@ try {
   <div class="landing planning-home">
     <header class="landing-nav">
       <a class="brand" href="/" @click.prevent="workspace.openExplore()"
-        ><span class="brand-symbol">↗</span> AI·Guide</a
+        ><img class="brand-logo" src="/favicon.svg" alt="" width="44" height="44" /> Tripwright</a
       >
       <div class="nav-links">
         <span class="desktop-only">把想去的地方，安排成一次旅行</span
@@ -110,6 +111,7 @@ try {
               ↑
             </button>
           </div>
+          <ModelOptions />
         </form>
         <div class="planning-suggestions">
           <button
@@ -138,7 +140,7 @@ try {
       <DiscoveryPanel :city="state.destination" home />
       <TripsPanel />
       <footer class="landing-footer">
-        <span>AI·Guide</span>
+        <span>Tripwright</span>
         <p>地点与路线来自高德 · AI 建议仅供参考</p>
       </footer>
     </main>

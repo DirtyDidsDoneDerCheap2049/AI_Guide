@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="420" viewBox="0 0 1600 420" role="img" aria-labelledby="title desc">
-  <title id="title">AI-Guide</title>
+  <title id="title">Tripwright</title>
   <desc id="desc">把想去的地方，安排成一次旅行。一个可以自己部署的旅行规划 Agent。</desc>
   <rect width="1600" height="420" rx="28" fill="#f3f5ef"/>
   <g fill="none" stroke="#dce4d6" stroke-width="2">
@@ -10,7 +10,8 @@
   <g fill="#315c49" stroke="#f3f5ef" stroke-width="8"><circle cx="1010" cy="305" r="15"/><circle cx="1165" cy="185" r="15"/><circle cx="1420" cy="102" r="15"/></g>
   <rect x="78" y="66" width="64" height="64" rx="20" fill="#315c49"/>
   <path d="M98 109l25-25m-18 0h18v18" fill="none" stroke="#f5f4dc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="164" y="114" fill="#263e35" font-family="Segoe UI,Arial,sans-serif" font-size="48" font-weight="700">AI-Guide</text>
+  <circle cx="98" cy="109" r="4" fill="#d3dfa8"/>
+  <text x="164" y="114" fill="#263e35" font-family="Segoe UI,Arial,sans-serif" font-size="48" font-weight="700">Tripwright</text>
   <text x="78" y="218" fill="#263e35" font-family="Microsoft YaHei,PingFang SC,Noto Sans CJK SC,sans-serif" font-size="46" font-weight="600">把想去的地方，安排成一次旅行。</text>
   <text x="80" y="274" fill="#62736a" font-family="Microsoft YaHei,PingFang SC,sans-serif" font-size="24">对话里讨论，地图上安排，下次打开接着计划。</text>
   <text x="80" y="355" fill="#50765c" font-family="Segoe UI,Arial,sans-serif" font-size="18" letter-spacing="2">TRAVEL PLANNING AGENT · SELF-HOSTED · OPEN SOURCE</text>

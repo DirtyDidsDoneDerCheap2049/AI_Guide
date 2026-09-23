@@ -13,6 +13,7 @@ from __future__ import annotations
 import logging
 import time
 import uuid
+from dataclasses import replace
 from decimal import Decimal
 from datetime import timedelta
 from typing import Any
@@ -490,8 +491,18 @@ def execute_run(
     with session_scope(factory) as db:
         intent_row = db.get(AgentRun, run_id)
         run_intent = intent_row.intent if intent_row is not None else None
+        selection = (intent_row.input_snapshot or {}).get("model_selection") if intent_row else None
 
     if run_intent == Intent.ANSWER_QUESTION:
+        if selection:
+            from app.services.model_options import settings_for_selection
+            from app.agent.providers.http import OpenAICompatibleTextProvider
+            settings = settings_for_selection(settings, selection)
+            if providers.mode == "real":
+                text_provider = OpenAICompatibleTextProvider(settings)
+                text_provider.json_mode = selection.get("json_mode", True)
+                text_provider.reasoning_effort = selection.get("thinking_level") or "high"
+                providers = replace(providers, text=text_provider)
         # D1-h：非图片任务走文字链路，完全不读图片、不调用视觉模型。
         return _execute_answer_run(
             factory, run_id, providers=providers, settings=settings, owner=owner, epoch=epoch

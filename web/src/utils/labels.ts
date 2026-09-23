@@ -65,6 +65,10 @@ const CANCEL_REASON_LABELS: LabelMap = {
 }
 
 const ERROR_CODE_LABELS: LabelMap = {
+  model_unavailable: '这个模型已下线，请刷新页面后重新选择。',
+  thinking_level_not_supported: '这个模型不支持所选档位，请刷新后重新选择。',
+  thinking_selection_conflict: '思考设置不一致，请重新选择档位后发送。',
+  thinking_not_supported: '这个模型不支持切换深度思考，请关闭开关或选择其他模型。',
   // 上传与额度
   active_project_exists: '当前会话已经有一个进行中的项目。',
   media_limit_reached: '每个项目最多只能放 3 张图片。',

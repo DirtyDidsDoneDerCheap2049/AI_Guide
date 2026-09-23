@@ -58,10 +58,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
+    from app.services.model_options import profiles
+    profiles(settings)
     configure_logging(settings.log_level)
 
     app = FastAPI(
-        title="AI-Guide API",
+        title="Tripwright API",
         version=settings.app_version or __version__,
         description="桌面端视觉导游 Agent 的 v0.1 后端：项目、图片、受控 Agent 运行、持久事件与 SSE。",
         lifespan=lifespan,

@@ -73,7 +73,9 @@ async function saveTitle() {
   <div class="travel-app">
     <header class="travel-topbar">
       <button class="brand" @click="workspace.openExplore()">
-        <span class="brand-symbol">↗</span><span>AI·Guide</span>
+        <img class="brand-logo" src="/favicon.svg" alt="" width="40" height="40" /><span
+          >Tripwright</span
+        >
       </button>
       <span class="topbar-divider"></span>
       <form v-if="titleEdit" @submit.prevent="saveTitle">

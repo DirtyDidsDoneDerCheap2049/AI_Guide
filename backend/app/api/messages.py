@@ -24,17 +24,25 @@ from app.api.deps import (
     get_settings_dep,
     load_owned_project,
 )
-from app.api.serialize import message_to_out, run_to_out
+from app.api.serialize import message_to_out, messages_to_out, run_to_out
 from app.config import Settings
 from app.limits import QuotaExceeded
 from app.models import AgentRun, GuideProject, DemoSession, MediaAsset, Message, User, utcnow
 from app.schemas import CreateMessageRequest, CreateMessageResponse, MessageListOut, MessageOut, MessageEditRequest
 from app.events import EventType, append_event
 from app.services.runs import RunConflict, create_message_run
+from app.services.model_options import profiles, thinking_levels, ModelSelectionError
 
 logger = logging.getLogger("app.api.messages")
 
 router = APIRouter()
+
+
+@router.get("/models", summary="可选对话模型，不含供应商地址或密钥")
+def list_models(settings: Settings = Depends(get_settings_dep)):
+    items = profiles(settings)
+    return {"models": [{"id": p.id, "label": p.label, "supports_thinking": p.thinking_mode != "none", "thinking_levels": thinking_levels(p.thinking_mode)} for p in items],
+            "default_id": items[0].id, "default_thinking": settings.text_enable_thinking}
 
 
 @router.post(
@@ -68,11 +76,16 @@ def create_message_endpoint(
             project=project,
             session_row=session_row,
             content=payload.content,
+            model_id=payload.model_id,
+            thinking=payload.thinking,
+            thinking_level=payload.thinking_level,
             media=media,
             intent=payload.intent,
             idempotency_key=idempotency_key,
             client_hash=client_hash,
         )
+    except ModelSelectionError as exc:
+        raise HTTPException(status_code=422, detail={"code": str(exc)}) from None
     except RunConflict as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"code": exc.code}) from None
     except QuotaExceeded as exc:
@@ -86,7 +99,7 @@ def create_message_endpoint(
     db.refresh(message)
     db.refresh(run)
     return CreateMessageResponse(
-        message=message_to_out(message),
+        message=message_to_out(message, run),
         run=run_to_out(run),
         idempotent_replay=not created,
     )
@@ -127,7 +140,7 @@ def list_messages_endpoint(
     if before_seq:
         rows.reverse()
     return MessageListOut(
-        messages=[message_to_out(item) for item in rows],
+        messages=messages_to_out(db, rows),
         last_seq=int(last_seq or 0),
     )
 
@@ -181,7 +194,7 @@ def edit_message(project_id: str, message_id: str, payload: MessageEditRequest,
         _invalidate_answers(db, project, row)
         append_event(db, project_id=project.id, type=EventType.MESSAGE_UPDATED, payload={"message_id": row.id, "seq": row.seq})
         db.commit()
-    return message_to_out(row)
+    return message_to_out(row, db.get(AgentRun, row.run_id) if row.run_id else None)
 
 
 @router.delete("/projects/{project_id}/messages/{message_id}", response_model=MessageOut)
@@ -194,7 +207,7 @@ def delete_message(project_id: str, message_id: str, expected_version: int = Que
     _invalidate_answers(db, project, row)
     append_event(db, project_id=project.id, type=EventType.MESSAGE_DELETED, payload={"message_id": row.id, "seq": row.seq})
     db.commit()
-    return message_to_out(row)
+    return message_to_out(row, db.get(AgentRun, row.run_id) if row.run_id else None)
 
 
 __all__ = ["router"]

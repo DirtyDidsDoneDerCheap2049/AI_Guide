@@ -53,6 +53,14 @@ import type {
 
 const API_PREFIX = '/api/v1'
 
+export function getModelOptions(): Promise<{
+  models: { id: string; label: string; supports_thinking: boolean; thinking_levels: string[] }[]
+  default_id: string
+  default_thinking: boolean
+}> {
+  return request(`${API_PREFIX}/models`)
+}
+
 export function discoverCity(city: string, query = ''): Promise<DiscoveryResult> {
   return request(`${API_PREFIX}/discovery?${new URLSearchParams({ city, q: query })}`)
 }

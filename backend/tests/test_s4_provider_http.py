@@ -215,6 +215,8 @@ def real_settings(settings: Settings, base_url: str, **overrides) -> Settings:
         "text_api_base_url": f"{base_url}/v1",
         "text_api_key": "stub-key-not-a-real-credential",
         "text_model": "stub-text",
+        "text_thinking_mode": "qwen",
+        "vision_thinking_mode": "qwen",
         "place_api_base_url": base_url,
         "place_api_key": "00000000000000000000000000000000",
     }

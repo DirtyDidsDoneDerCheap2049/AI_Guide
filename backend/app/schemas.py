@@ -186,6 +186,10 @@ class GuideCardOut(BaseModel):
 
 
 class RunOut(BaseModel):
+    thinking_level: str | None = None
+    model_id: str | None = None
+    model_label: str | None = None
+    thinking: bool | None = None
     id: str
     project_id: str
     # 非图片任务（intent=answer_question）没有 media
@@ -463,6 +467,10 @@ class PlaceSearchOut(BaseModel):
 
 
 class MessageOut(BaseModel):
+    thinking_level: str | None = None
+    model_id: str | None = None
+    model_label: str | None = None
+    thinking: bool | None = None
     version: int = 1
     edited_at: datetime | None = None
     deleted_at: datetime | None = None
@@ -485,6 +493,9 @@ class CreateMessageRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     content: str = Field(min_length=1, max_length=2000)
+    model_id: str | None = Field(default=None, max_length=80)
+    thinking: bool | None = None
+    thinking_level: Literal["off", "low", "medium", "high"] | None = None
     # 可选：把问题限定在某张照片的范围（不指定就是工作区范围）
     media_asset_id: str | None = None
     intent: Literal["answer_question"] = "answer_question"

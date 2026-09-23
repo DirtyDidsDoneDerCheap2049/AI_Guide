@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/readme/cover.svg" alt="AI-Guide：把想去的地方，安排成一次旅行。" width="100%">
+  <img src="docs/assets/readme/cover.svg" alt="Tripwright：把想去的地方，安排成一次旅行。" width="100%">
 </p>
 
 <p align="center">
@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/badge/License-MIT-315c49?style=flat-square" alt="MIT License">
 </p>
 
-AI-Guide 是一个可以自己部署的桌面旅行规划 Agent。选一座城市，边聊边找地点，把想去的地方加进路线，在地图上比较步行和驾车方案。对话、收藏和路线保存在同一次旅行里，下次打开可以接着安排。
+Tripwright 是一个可以自己部署的桌面旅行规划 Agent。选一座城市，边聊边找地点，把想去的地方加进路线，在地图上比较步行和驾车方案。对话、收藏和路线保存在同一次旅行里，下次打开可以接着安排。
 
 [![对话与路线并排展示，在地图旁搜索地点、添加停留点和调整顺序](docs/assets/readme/routes.webp)](docs/assets/readme/routes.webp)
 
@@ -46,6 +46,14 @@ AI-Guide 是一个可以自己部署的桌面旅行规划 Agent。选一座城�
 
 在路线面板直接搜索并添加地点，调整停留点顺序，或移除不想去的地方。切换步行和驾车，查看高德返回的线路、距离与预计时长。计算失败会保留地点列表，并提示重新计算。
 
+### 选择模型和思考模式
+
+在输入框下方选择已配置的模型，点击档位按钮，用滑条在“关闭、轻度、标准、深入”之间调整。选项随模型能力变化。每条任务记录发送时的选择，切换模型不会改变正在生成的回答。支持 OpenAI Chat Completions 兼容接口，供应商密钥保留在服务器。配置方式见 [模型与深度思考](docs/MODELS.md)。
+
+<p align="center">
+  <img src="docs/assets/readme/model-options.webp" alt="对话输入框中的模型选择和思考档位滑条" width="430">
+</p>
+
 ### 下次接着计划
 
 可以先以访客身份试用，再把旅行保存到自己的账号。多次旅行分别保存，刷新和再次登录后继续查看。已有景点照片也可以作为线索上传，确认识别地点后获取讲解；照片是可选的辅助入口。
@@ -58,7 +66,7 @@ AI-Guide 是一个可以自己部署的桌面旅行规划 Agent。选一座城�
 
 推荐 Docker Compose，从源码构建前后端。一台服务器同时运行 Web、API、Worker、MySQL 和 Redis，Caddy 负责 HTTPS。
 
-需要准备 Docker Engine 与 Compose v2、一个解析到服务器的域名、可用的 Qwen 兼容模型接口，以及高德 Web 服务 Key 和 Web 端 JS Key。真实邮箱验证与找回密码还需要 SMTP。
+需要准备 Docker Engine 与 Compose v2、一个解析到服务器的域名、可用的 OpenAI Chat Completions 兼容模型接口，以及高德 Web 服务 Key 和 Web 端 JS Key。真实邮箱验证与找回密码还需要 SMTP。
 
 先克隆仓库，再进入项目目录：
 
@@ -93,6 +101,8 @@ docker compose -f docker-compose.yml -f deploy/compose.small.yml ps -a
 
 本地开发、fixture 模式和独立测试库配置见 [开发指南](docs/DEMO-STARTUP.md)。
 
+从原 AI-Guide 版本更新，见 [GitHub 与服务器更新步骤](docs/UPDATE-TRIPWRIGHT.md)。项目显示名称已改为 Tripwright，现有仓库地址和部署数据标识保留，已有旅行可继续使用。
+
 ## 后端怎么工作
 
 | 部分 | 技术与职责 |
@@ -103,7 +113,7 @@ docker compose -f docker-compose.yml -f deploy/compose.small.yml ps -a
 | 后台任务 | Dramatiq Worker；模型调用、步骤推进、租约和超时恢复 |
 | 队列与缓存 | Redis；任务投递、短期缓存和部分限流 |
 | 页面进度 | SSE；通过持久事件和游标补发断线期间的更新 |
-| 外部服务 | Qwen 兼容接口、高德地点检索与算路、JS 地图安全代理 |
+| 外部服务 | OpenAI Chat Completions 兼容接口、高德地点检索与算路、JS 地图安全代理 |
 | 部署 | Docker Compose、Caddy、持久化数据卷 |
 
 ```mermaid
@@ -128,9 +138,9 @@ flowchart LR
 
 - 主要适用于电脑浏览器和国内城市规划。高德提供地点、图片和路线；模型建议不等同于已核实的营业时间、票价或预约规则。
 - 攻略和 B 站视频目前来自已收录链接与搜索入口，不解析全网攻略正文或视频内容。
-- 模型接口采用 OpenAI 兼容协议，同时使用 Qwen 的 thinking 参数和 JSON 输出约定。更换供应商需要验证兼容性。
+- 模型通过 OpenAI Chat Completions 兼容协议调用，思考参数按模型配置适配；只接受服务端白名单内的模型。更换供应商仍需验证参数、结构化输出和图片能力。
 - 邮箱验证和密码找回依赖真实 SMTP；`console` 仅用于开发，不投递邮件。
-- 当前没有订票、支付、实时导航、独立手机 App 或“深度思考”按钮。
+- 当前没有订票、支付、实时导航或独立手机 App。
 - 自动回归使用 fixture 验证流程；真实模型质量与外部服务连通性要单独验收。部署与操作结果不代表已经做过并发压测或生产恢复演练。
 
 ## 许可证

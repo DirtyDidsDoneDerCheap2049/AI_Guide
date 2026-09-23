@@ -21,6 +21,7 @@
  */
 
 import { computed, reactive } from 'vue'
+import { useModelOptions } from './useModelOptions'
 
 import {
   analyzeMedia as analyzeMediaRequest,
@@ -119,6 +120,9 @@ export interface ActivityEntry {
  * 一旦 POST 成功返回，就用服务器返回的消息替换它，绝不让本地条目长期充当历史。
  */
 export interface OutboxEntry {
+  thinkingLevel?: string
+  modelId?: string
+  thinking?: boolean
   /** 本地唯一 ID（与幂等键一样使用 randomUUID），也是界面上的 key。 */
   clientId: string
   content: string
@@ -1294,7 +1298,14 @@ async function postMessage(entry: OutboxEntry): Promise<void> {
   try {
     const response = await createMessageRequest(
       projectId,
-      { content: entry.content, media_asset_id: entry.mediaId, intent: 'answer_question' },
+      {
+        content: entry.content,
+        media_asset_id: entry.mediaId,
+        intent: 'answer_question',
+        model_id: entry.modelId,
+        thinking: entry.thinking,
+        thinking_level: entry.thinkingLevel,
+      },
       entry.clientId,
     )
     if (state.snapshot?.project.id !== projectId) return
@@ -1334,6 +1345,11 @@ function buildOutboxEntry(
 ): OutboxEntry {
   return {
     clientId: newIdempotencyKey(),
+    modelId: useModelOptions().state.modelId || undefined,
+    thinkingLevel: useModelOptions().state.modelId
+      ? useModelOptions().state.thinkingLevel
+      : undefined,
+    thinking: useModelOptions().state.modelId ? useModelOptions().state.thinking : undefined,
     content,
     mediaId,
     scopeLabel,
@@ -1435,6 +1451,11 @@ function resendQuestionForAnswer(message: MessageOut): void {
       ? `整个工作区（${mediaList.value.length} 张照片）`
       : `第 ${media.media.position} 张照片：${media.media.original_filename}`
   const entry = buildOutboxEntry(origin.content, media?.media.id ?? null, scopeLabel)
+  if (origin.model_id) {
+    entry.modelId = origin.model_id
+    entry.thinking = origin.thinking ?? false
+    entry.thinkingLevel = origin.thinking_level ?? undefined
+  }
   state.outbox.push(entry)
   void postMessage(entry)
 }

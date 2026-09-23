@@ -24,6 +24,7 @@ from app.agent.providers.base import (
     ProviderTimeout,
 )
 from app.config import Settings
+from app.services.model_options import thinking_mode
 
 
 class _OpenAICompatibleBase:
@@ -33,6 +34,8 @@ class _OpenAICompatibleBase:
         self.api_key = api_key
         self.model = model
         self.name = name
+        self.json_mode = True
+        self.reasoning_effort = "high"
 
     def _post_chat(
         self,
@@ -48,14 +51,22 @@ class _OpenAICompatibleBase:
         payload: dict[str, Any] = {
             "model": self.model,
             "messages": messages,
-            "temperature": temperature,
-            "response_format": {"type": "json_object"},
-            # 百炼的混合思考模型（qwen3.5~3.8、qwen3-vl-*）默认开启思考；
-            # 结构化抽取不需要思考，显式关闭以降低延迟和输出 token。
-            "enable_thinking": enable_thinking,
         }
-        if enable_thinking:
-            payload["thinking_budget"] = self.settings.thinking_budget
+        mode = thinking_mode(getattr(self.settings, f"{self.name}_thinking_mode"), self.base_url)
+        # Qwen thinking and JSON mode are incompatible on some models.
+        # Output still passes our schema validation and bounded repair loop.
+        if self.json_mode and not (mode == "qwen" and enable_thinking):
+            payload["response_format"] = {"type": "json_object"}
+        if not enable_thinking:
+            payload["temperature"] = temperature
+        if mode == "qwen":
+            payload["enable_thinking"] = enable_thinking
+            if enable_thinking:
+                payload["thinking_budget"] = self.settings.thinking_budget
+        elif mode == "deepseek":
+            payload["thinking"] = {"type": "enabled" if enable_thinking else "disabled"}
+        elif mode == "reasoning_effort":
+            payload["reasoning_effort"] = self.reasoning_effort if enable_thinking else "none"
         if extra_body:
             payload.update(extra_body)
         headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
@@ -82,14 +93,16 @@ class _OpenAICompatibleBase:
             text = body["choices"][0]["message"]["content"]
         except (KeyError, IndexError, TypeError):
             raise ProviderInvalidResponse("missing_choices", response_status=response.status_code) from None
+        if not isinstance(text, str) or not text.strip():
+            raise ProviderInvalidResponse("empty_content", response_status=response.status_code)
         usage = body.get("usage") or {}
         return ModelResult(
-            text=text if isinstance(text, str) else str(text),
+            text=text,
             model=str(body.get("model") or self.model),
             prompt_tokens=int(usage.get("prompt_tokens") or 0),
             completion_tokens=int(usage.get("completion_tokens") or 0),
             response_status=response.status_code,
-            request_summary={"provider": self.name, "model": self.model, "messages": len(messages), "duration_ms": duration_ms},
+            request_summary={"provider": self.name, "model": self.model, "thinking": enable_thinking, "messages": len(messages), "duration_ms": duration_ms},
         )
 
 

@@ -1,7 +1,7 @@
 [project]
 name = "ai-guide-backend"
 version = "0.1.0"
-description = "AI-Guide v0.1 后端：FastAPI + MySQL + Redis/Dramatiq + SSE + 受控 Agent"
+description = "Tripwright v0.1 后端：FastAPI + MySQL + Redis/Dramatiq + SSE + 受控 Agent"
 requires-python = ">=3.11"
 
 [tool.pytest.ini_options]

@@ -166,7 +166,12 @@ watch(
       class="chat-message"
       :class="`chat-message--${message.role}`"
     >
-      <div v-if="message.role === 'assistant'" class="message-author"><span>↗</span> AI·Guide</div>
+      <div v-if="message.role === 'assistant'" class="message-author">
+        <span>↗</span> Tripwright
+        <small v-if="message.model_label">
+          · {{ message.model_label }}{{ message.thinking ? ' · 深度思考' : '' }}
+        </small>
+      </div>
       <form
         v-if="editing === message.id && editTarget"
         class="message-edit"

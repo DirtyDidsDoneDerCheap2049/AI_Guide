@@ -87,9 +87,9 @@ def verification_message(settings: Settings, *, to: str, token: str) -> EmailMes
     link = f"{settings.public_base_url.rstrip('/')}/verify-email?token={token}"
     return EmailMessagePayload(
         to=to,
-        subject="AI-Guide 邮箱验证",
+        subject="Tripwright 邮箱验证",
         body=(
-            "欢迎使用 AI-Guide。\n\n"
+            "欢迎使用 Tripwright。\n\n"
             f"请在 {settings.auth_token_ttl_minutes} 分钟内打开下面的链接完成邮箱验证：\n{link}\n\n"
             f"如果按钮打不开，可以把这段令牌粘贴到页面里：{token}\n"
             "这不是你的密码，任何人拿到它都能验证这个邮箱，请不要转发。\n"
@@ -101,7 +101,7 @@ def reset_message(settings: Settings, *, to: str, token: str) -> EmailMessagePay
     link = f"{settings.public_base_url.rstrip('/')}/reset-password?token={token}"
     return EmailMessagePayload(
         to=to,
-        subject="AI-Guide 密码重置",
+        subject="Tripwright 密码重置",
         body=(
             "我们收到了重置密码的请求。\n\n"
             f"请在 {settings.auth_token_ttl_minutes} 分钟内打开下面的链接设置新密码：\n{link}\n\n"

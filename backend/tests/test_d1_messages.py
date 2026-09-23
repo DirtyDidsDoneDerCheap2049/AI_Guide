@@ -54,6 +54,44 @@ def _send(client, project_id: str, content: str, *, idempotency_key: str | None 
     return client.post(f"/api/v1/projects/{project_id}/messages", json=body, headers=headers)
 
 
+def test_model_selection_snapshot_replay_and_retry(client, settings, session_factory, providers):
+    project = create_project(client)
+    url = f"/api/v1/projects/{project['id']}/messages"
+    catalog = client.get('/api/v1/models').json()
+    assert catalog['models'][0]['supports_thinking'] is True
+    assert 'api_key' not in str(catalog) and 'base_url' not in str(catalog)
+    rejected = client.post(url, json={'content': '问题', 'model_id': 'not-allowed'})
+    assert rejected.status_code == 422
+    payload = {'content': '带什么行李？', 'model_id': 'default', 'thinking': True, 'thinking_level': 'low'}
+    response = client.post(url, json=payload, headers={'Idempotency-Key': 'model-choice'})
+    assert response.status_code == 201
+    run_id = response.json()['run']['id']
+    assert response.json()['run']['thinking'] is True
+    assert response.json()['run']['thinking_level'] == 'low'
+    replay = client.post(url, json={**payload, 'thinking': False}, headers={'Idempotency-Key': 'model-choice'})
+    assert replay.json()['run']['id'] == run_id
+    assert replay.json()['run']['thinking'] is True
+    with session_factory() as db:
+        run = db.get(AgentRun, run_id)
+        original = run.input_snapshot['model_selection']
+        assert 'api_key' not in original
+    assert client.post(f'/api/v1/runs/{run_id}/cancel').status_code == 200
+    retry = client.post(f'/api/v1/runs/{run_id}/retry')
+    assert retry.status_code == 202
+    retry_id = retry.json()['run_id']
+    with session_factory() as db:
+        assert db.get(AgentRun, retry_id).input_snapshot['model_selection'] == original
+    assert execute_run(session_factory, retry_id, providers=providers, settings=settings) == RunStatus.SUCCEEDED
+    messages = client.get(url).json()['messages']
+    assert messages[-1]['thinking'] is True
+    assert messages[-1]['model_label'] == settings.text_model
+    assert messages[-1]['model_id'] == 'default'
+    assert messages[-1]['thinking_level'] == 'low'
+    assert 'api_key_env' not in str(messages)
+    snapshot = client.get(f"/api/v1/projects/{project['id']}").json()
+    assert snapshot['messages'][-1]['thinking'] is True
+
+
 def test_workspace_message_creates_text_run_without_media(app, client, settings, session_factory, providers):
     project = create_project(client, title=unique_title("d1h"), city_hint="杭州")
     CALL_COUNTER.clear()

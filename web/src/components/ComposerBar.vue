@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import ModelOptions from './ModelOptions.vue'
 import { useWorkspace } from '../composables/useWorkspace'
 defineProps<{ compact?: boolean }>()
 const workspace = useWorkspace()
@@ -60,6 +61,7 @@ function upload(event: Event) {
         ↑
       </button>
     </div>
+    <ModelOptions />
     <input
       ref="picker"
       type="file"

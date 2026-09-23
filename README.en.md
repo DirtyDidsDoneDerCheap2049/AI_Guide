@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/readme/cover.svg" alt="AI-Guide: plan a trip around the places you want to visit" width="100%">
+  <img src="docs/assets/readme/cover.svg" alt="Tripwright: plan a trip around the places you want to visit" width="100%">
 </p>
 
 <p align="center">
@@ -9,7 +9,7 @@
   <a href="README.md">简体中文</a>
 </p>
 
-# AI-Guide
+# Tripwright
 
 A self-hosted travel planning agent for desktop browsers. Discuss places in the conversation, add them to a route, and compare walking and driving directions on the map. Conversations, saved places and routes stay together in each trip.
 
@@ -30,13 +30,14 @@ The demo has usage limits. Use sample trips and avoid uploading sensitive inform
 - Search and add stops directly in a route, change their order, and compare walking and driving directions. Stops survive a failed route calculation.
 - Start as a guest and save the trip to an account later. Keep separate trips and reopen them after signing in.
 - Optionally upload a reference photo, confirm the recognized place, and request a guide card.
+- Choose a server-configured model and adjust thinking with a stepped slider. Available levels depend on the model's capabilities. Each task keeps its original selection across retries. See [model configuration](docs/MODELS.md).
 - Open curated travel links and Bilibili search links. The application does not crawl arbitrary guide articles or analyze videos.
 
 [![City selection and the planning entry point](docs/assets/readme/home.webp)](docs/assets/readme/home.webp)
 
 ## Self-hosting
 
-Use Docker Engine and Compose v2. You need a domain pointing at your server, a working Qwen-compatible model endpoint, AMap Web Service credentials and a separate AMap JavaScript key. Email verification and password recovery require SMTP.
+Use Docker Engine and Compose v2. You need a domain pointing at your server, an OpenAI Chat Completions-compatible model endpoint, AMap Web Service credentials and a separate AMap JavaScript key. Email verification and password recovery require SMTP.
 
 Clone the repository:
 
@@ -73,9 +74,11 @@ Vue 3 and TypeScript provide the UI. FastAPI validates requests, ownership and v
 
 See [architecture](docs/ARCHITECTURE.md) and [local development](docs/DEMO-STARTUP.md) for code entry points and checks.
 
+Upgrading an existing AI-Guide deployment? Follow the [update guide](docs/UPDATE-TRIPWRIGHT.md). The repository URL and persistent deployment identifiers are retained so existing trips remain accessible.
+
 ## Scope
 
-Travel advice needs source verification, especially prices, opening hours and booking rules. Models use an OpenAI-compatible chat API with Qwen-specific thinking parameters and JSON output requirements; other providers need compatibility testing. The current version does not include booking, payments, turn-by-turn navigation, a separate mobile app or a deep-thinking switch.
+Travel advice needs source verification, especially prices, opening hours and booking rules. Models use the OpenAI Chat Completions format with per-model thinking adapters and validated JSON output. Other providers need compatibility testing. The current version does not include booking, payments, turn-by-turn navigation or a separate mobile app.
 
 Automated fixtures test system behavior. Real provider quality and production backup recovery require separate validation. The public demo's email delivery remains unconfigured.
 

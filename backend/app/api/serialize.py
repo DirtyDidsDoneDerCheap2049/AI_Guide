@@ -80,7 +80,12 @@ def project_to_out(project: GuideProject, media_count: int = 0) -> ProjectOut:
 
 
 def run_to_out(run: AgentRun) -> RunOut:
+    selection = (run.input_snapshot or {}).get("model_selection") or {}
     return RunOut(
+        thinking_level=selection.get("thinking_level"),
+        model_id=selection.get("id"),
+        model_label=selection.get("label"),
+        thinking=selection.get("thinking"),
         id=run.id,
         project_id=run.project_id,
         media_asset_id=run.media_asset_id,
@@ -164,8 +169,19 @@ def user_to_out(user: User) -> UserOut:
     )
 
 
-def message_to_out(message: Message) -> MessageOut:
+def messages_to_out(db: Session, messages: list[Message]) -> list[MessageOut]:
+    ids = {m.run_id for m in messages if m.run_id}
+    runs = {run.id: run for run in db.scalars(select(AgentRun).where(AgentRun.id.in_(ids)))} if ids else {}
+    return [message_to_out(message, runs.get(message.run_id)) for message in messages]
+
+
+def message_to_out(message: Message, run: AgentRun | None = None) -> MessageOut:
+    selection = (run.input_snapshot or {}).get("model_selection", {}) if run else {}
     return MessageOut(
+        thinking_level=selection.get("thinking_level"),
+        model_id=selection.get("id"),
+        model_label=selection.get("label"),
+        thinking=selection.get("thinking"),
         version=message.version,
         edited_at=message.edited_at,
         deleted_at=message.deleted_at,
@@ -361,6 +377,6 @@ def build_project_snapshot(db: Session, project: GuideProject) -> ProjectSnapsho
         media=[build_media_snapshot(db, media) for media in media_list],
         last_event_id=latest_event_id(db, project.id),
         last_event_seq=watermark_seq,
-        messages=[message_to_out(item) for item in recent],
+        messages=messages_to_out(db, recent),
         last_message_seq=int(recent[-1].seq) if recent else 0,
     )

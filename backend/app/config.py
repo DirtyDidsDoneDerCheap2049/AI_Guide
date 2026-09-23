@@ -75,6 +75,10 @@ class Settings(BaseSettings):
     text_api_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
     text_api_key: str = ""
     text_model: str = "qwen3.7-plus"
+    # JSON array of server-managed OpenAI Chat Completions profiles; never sent to browsers.
+    text_model_profiles: str = "[]"
+    text_thinking_mode: Literal["auto", "none", "qwen", "deepseek", "reasoning_effort"] = "auto"
+    vision_thinking_mode: Literal["auto", "none", "qwen", "deepseek", "reasoning_effort"] = "auto"
     place_api_base_url: str = "https://restapi.amap.com"
     place_api_key: str = ""
     # B4：一次地点搜索取回多少候选（用于同名/跨城消歧），1–20。
@@ -125,7 +129,7 @@ class Settings(BaseSettings):
     vision_enable_thinking: bool = False
     text_enable_thinking: bool = False
     # 思考模式下的最大推理 token（仅在 enable_thinking=true 时发送）。
-    thinking_budget: int = 4096
+    thinking_budget: int = Field(default=4096, ge=4, le=16384)
     # 视觉分辨率：默认按服务端策略压缩；打开高分辨率或放宽 max_pixels 可保留招牌/小字细节，
     # 代价是更多视觉 token。max_pixels=0 表示不发送该参数（使用服务端默认 2621440）。
     vision_high_resolution_images: bool = False

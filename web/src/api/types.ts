@@ -194,6 +194,10 @@ export interface GuideCardOut {
 
 /** RunOut */
 export interface RunOut {
+  thinking_level?: string | null
+  model_id?: string | null
+  model_label?: string | null
+  thinking?: boolean | null
   id: string
   project_id: string
   /** 图片任务的媒体 ID；工作区问答（message 链路）不带图片，这里是 null。 */
@@ -251,6 +255,10 @@ export type MessageStatus = 'QUEUED' | 'READY' | 'FAILED'
  * 因此「回答是否还在进行」要看这个 run，而不是猜。
  */
 export interface MessageOut {
+  thinking_level?: string | null
+  model_id?: string | null
+  model_label?: string | null
+  thinking?: boolean | null
   version: number
   edited_at: string | null
   deleted_at: string | null
@@ -279,6 +287,9 @@ export interface MessageOut {
 
 /** POST /api/v1/projects/{project_id}/messages 请求体（extra="forbid"）。 */
 export interface CreateMessageRequest {
+  thinking_level?: string
+  model_id?: string
+  thinking?: boolean
   /** 1..2000 字，后端会复核。 */
   content: string
   /** 选定某张照片时带上它的 ID（照片范围提问）；否则 null（整个工作区）。 */

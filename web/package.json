@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "AI-Guide 桌面旅行规划与导游（Vite + Vue 3 + TypeScript）",
+  "description": "Tripwright 桌面旅行规划与导游（Vite + Vue 3 + TypeScript）",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
