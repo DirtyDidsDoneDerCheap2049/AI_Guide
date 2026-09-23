@@ -12,6 +12,7 @@ RUN npm ci --no-audit --no-fund
 COPY tsconfig.json vite.config.ts index.html ./
 COPY types ./types
 COPY src ./src
+COPY public ./public
 
 # 高德「网页端 JS Key」是构建期注入的公开变量（Vite 只把 VITE_* 编进产物）。
 # 不传该参数时构建仍然成功，地图区域会显示「未配置地图 Key」，其余功能正常。
